@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GeoFoot Live — L'émotion du direct, signé Faye</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@300;400;500&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--g:#00c46a;--red:#e84040;--gold:#f0a500;--bg:#080e14;--surf:#0f1923;--surf2:#18242f;--bord:#1f2f3d;--txt:#eaf0f7;--txt2:#7a96aa}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--txt);min-height:100vh}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.hdr{background:var(--surf);border-bottom:1px solid var(--bord);padding:0 18px;display:flex;align-items:center;gap:12px;height:54px;position:sticky;top:0;z-index:100}
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--red);animation:blink 1s infinite;flex-shrink:0}
+.brand-name{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#fff}
+.brand-name span{color:var(--g)}
+.brand-sub{font-size:9px;font-style:italic;color:var(--gold)}
+.hdr-nav{display:flex;gap:2px;margin-left:auto}
+.nb{background:none;border:none;color:var(--txt2);font-family:'Inter',sans-serif;font-size:12px;padding:6px 12px;border-radius:5px;cursor:pointer;transition:.14s}
+.nb:hover,.nb.on{background:var(--surf2);color:var(--txt)}
+.nb.on{border-bottom:2px solid var(--g);border-radius:0}
+.live-count{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;animation:blink 2s infinite}
+.search{background:var(--surf2);border:1px solid var(--bord);color:var(--txt);font-family:'Inter',sans-serif;font-size:12px;padding:7px 12px;border-radius:20px;width:180px;outline:none}
+.search:focus{border-color:var(--g)}
+.search::placeholder{color:var(--txt2)}
+
+.layout{display:grid;grid-template-columns:205px 1fr 270px;height:calc(100vh - 54px)}
+
+.sidebar{background:var(--surf);border-right:1px solid var(--bord);overflow-y:auto;padding:8px 0}
+.sb-ttl{font-size:9px;font-weight:700;color:var(--txt2);letter-spacing:2px;text-transform:uppercase;padding:10px 14px 4px}
+.sbi{display:flex;align-items:center;gap:8px;padding:7px 14px;cursor:pointer;transition:.12s;border-left:2px solid transparent}
+.sbi:hover{background:var(--surf2)}
+.sbi.on{background:rgba(0,196,106,.07);border-left-color:var(--g)}
+.sbi-fl{font-size:14px;width:18px;text-align:center;flex-shrink:0}
+.sbi-nm{font-size:12px;color:var(--txt);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sbi-cn{font-size:9px;background:var(--surf2);color:var(--txt2);padding:2px 6px;border-radius:8px}
+.sbi.on .sbi-cn{background:rgba(0,196,106,.15);color:var(--g)}
+.sdiv{height:1px;background:var(--bord);margin:6px 14px}
+
+.center{display:flex;flex-direction:column;overflow:hidden}
+.player-zone{background:#000;flex-shrink:0}
+.player-ratio{width:100%;padding-top:52%;position:relative}
+.player-screen{position:absolute;inset:0}
+.player-idle{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;height:100%;background:#050d14}
+.play-btn{width:60px;height:60px;border-radius:50%;background:rgba(0,196,106,.12);border:2px solid var(--g);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.2s}
+.play-btn:hover{background:rgba(0,196,106,.28);transform:scale(1.07)}
+.play-tri{width:0;height:0;border-top:13px solid transparent;border-bottom:13px solid transparent;border-left:20px solid var(--g);margin-left:4px}
+.idle-msg{font-size:12px;color:var(--txt2)}
+.idle-nm{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--txt)}
+
+.stream-wrap{position:absolute;inset:0;display:flex;flex-direction:column;background:#000}
+.stream-field{flex:1;background:#050d14;display:flex;align-items:center;justify-content:center;position:relative}
+.score-ov{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);border:1px solid rgba(255,255,255,.1);padding:5px 16px;border-radius:5px;display:flex;align-items:center;gap:10px;white-space:nowrap}
+.ov-nm{font-size:11px;font-weight:500}
+.ov-sc{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--g);padding:0 6px;letter-spacing:2px}
+.ov-mn{font-size:9px;color:var(--g);font-weight:700;background:rgba(0,196,106,.15);padding:2px 6px;border-radius:3px}
+.live-ov{background:var(--red);color:#fff;font-size:8px;font-weight:700;padding:2px 6px;border-radius:2px;letter-spacing:1px;animation:blink 1s infinite}
+.stream-ctrl{background:#08131d;border-top:1px solid var(--bord);padding:6px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.ctrl-btn{background:none;border:none;cursor:pointer;color:var(--txt2);transition:.14s;padding:3px;border-radius:3px;display:flex;align-items:center}
+.ctrl-btn:hover{color:var(--txt);background:var(--surf2)}
+.vol-bar{width:70px;height:3px;background:var(--surf2);border-radius:2px;cursor:pointer}
+.vol-fill{height:100%;width:70%;background:var(--txt2);border-radius:2px}
+.stream-info{flex:1;font-size:10px;color:var(--txt2)}
+.stream-ch{color:var(--g);font-weight:500}
+.q-sel{background:var(--surf2);border:1px solid var(--bord);color:var(--txt2);font-size:9px;padding:3px 5px;border-radius:3px}
+.close-btn{background:none;border:1px solid var(--bord);color:var(--txt2);font-size:10px;padding:3px 8px;border-radius:3px;cursor:pointer}
+.close-btn:hover{border-color:var(--red);color:var(--red)}
+
+.ch-bar{background:var(--surf2);border-top:1px solid var(--bord);border-bottom:1px solid var(--bord);padding:6px 10px;display:flex;gap:5px;overflow-x:auto;flex-shrink:0}
+.ch-bar::-webkit-scrollbar{height:2px}
+.ch-pill{background:var(--surf);border:1px solid var(--bord);color:var(--txt2);font-size:10px;padding:3px 10px;border-radius:4px;cursor:pointer;white-space:nowrap;transition:.13s;flex-shrink:0}
+.ch-pill:hover,.ch-pill.on{border-color:var(--g);color:var(--g);background:rgba(0,196,106,.08)}
+
+.match-list{flex:1;overflow-y:auto;padding:12px}
+.fb-row{display:flex;gap:5px;margin-bottom:10px;flex-wrap:wrap}
+.fb{background:var(--surf);border:1px solid var(--bord);color:var(--txt2);font-size:11px;padding:4px 12px;border-radius:12px;cursor:pointer;transition:.13s}
+.fb:hover{border-color:var(--g);color:var(--txt)}
+.fb.on{background:var(--g);border-color:var(--g);color:#020e08;font-weight:500}
+
+.lg-hdr{display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--surf2);border-radius:6px;margin:12px 0 7px;border-left:3px solid var(--g)}
+.lg-fl{font-size:15px}
+.lg-nm{font-family:'Syne',sans-serif;font-size:13px;font-weight:700}
+.lg-rd{font-size:10px;color:var(--txt2);margin-left:auto}
+.lg-cnt{font-size:9px;background:rgba(0,196,106,.12);color:var(--g);padding:2px 7px;border-radius:8px}
+
+.mc{background:var(--surf);border:1px solid var(--bord);border-radius:8px;margin-bottom:6px;cursor:pointer;transition:.14s;overflow:hidden;animation:fadeIn .3s ease}
+.mc:hover{border-color:rgba(0,196,106,.4);transform:translateY(-1px)}
+.mc.sel{border-color:var(--g);background:rgba(0,196,106,.04)}
+.mc-body{display:grid;grid-template-columns:1fr 84px 1fr;align-items:center;gap:8px;padding:10px 14px}
+.team{display:flex;align-items:center;gap:8px}
+.team.aw{flex-direction:row-reverse}
+.tlog{width:28px;height:28px;border-radius:50%;background:var(--surf2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;border:1px solid var(--bord);flex-shrink:0}
+.tn{font-size:13px;font-weight:500}
+.team.aw .tn{text-align:right}
+.mc-mid{text-align:center}
+.sc{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;letter-spacing:2px}
+.sc.live{color:var(--g)}
+.sc.fin{color:var(--txt)}
+.sc.sch{color:var(--txt2);font-size:14px;letter-spacing:0}
+.mc-time{font-size:10px;margin-top:2px}
+.t-live{color:var(--g);font-weight:700}
+.t-fin{color:var(--txt2)}
+.t-sch{color:var(--txt2)}
+.mc-ft{border-top:1px solid var(--bord);padding:5px 14px;display:flex;align-items:center;gap:8px;font-size:10px;color:var(--txt2)}
+.li-ind{display:flex;align-items:center;gap:4px;color:var(--g);font-weight:600}
+.li-ind i{width:5px;height:5px;border-radius:50%;background:var(--g);animation:blink 1s infinite;display:block}
+.tv{background:var(--surf2);border:1px solid var(--bord);padding:2px 7px;border-radius:3px;font-size:9px}
+.watch-btn{background:rgba(0,196,106,.1);border:1px solid rgba(0,196,106,.3);color:var(--g);font-size:10px;padding:3px 10px;border-radius:4px;cursor:pointer;margin-left:auto;transition:.13s;font-family:'Inter',sans-serif;font-weight:500}
+.watch-btn:hover{background:rgba(0,196,106,.25)}
+
+.rpanel{background:var(--surf);border-left:1px solid var(--bord);overflow-y:auto;padding:14px}
+.tabs{display:flex;gap:2px;margin-bottom:12px;border-bottom:1px solid var(--bord);padding-bottom:8px}
+.tab{background:none;border:none;color:var(--txt2);font-family:'Inter',sans-serif;font-size:11px;padding:4px 10px;cursor:pointer;border-radius:4px;transition:.13s}
+.tab:hover{color:var(--txt)}
+.tab.on{background:var(--g);color:#020e08;font-weight:600}
+
+.sc-row{display:flex;align-items:center;gap:8px;padding:9px;background:var(--surf2);border-radius:7px;margin-bottom:7px;cursor:pointer;transition:.13s}
+.sc-row:hover{background:#1e2f3d}
+.sr-rk{font-family:'Syne',sans-serif;font-size:18px;color:var(--txt2);width:20px;text-align:center}
+.sr-rk.gold{color:var(--gold)}
+.sr-nm{font-size:12px;font-weight:500}
+.sr-tm{font-size:10px;color:var(--txt2)}
+.sr-g{font-family:'Syne',sans-serif;font-size:20px;color:var(--g)}
+
+.st-tbl{width:100%;font-size:10px;border-collapse:collapse}
+.st-tbl th{color:var(--txt2);font-weight:400;padding:3px 4px;text-align:left;border-bottom:1px solid var(--bord);font-size:9px}
+.st-tbl td{padding:5px 4px;border-bottom:1px solid rgba(31,47,61,.5);color:var(--txt2)}
+.st-tbl tr:hover td{background:var(--surf2)}
+.st-tbl td:nth-child(2){font-weight:500;color:var(--txt);font-size:11px}
+.st-tbl td:nth-child(3){font-weight:700;color:var(--txt)}
+.pb{width:17px;height:17px;border-radius:2px;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700}
+.pcl{background:rgba(0,196,106,.18);color:var(--g)}
+.pel{background:rgba(240,165,0,.13);color:var(--gold)}
+.prl{background:rgba(232,64,64,.13);color:var(--red)}
+.pn{background:var(--surf2);color:var(--txt2)}
+.fm{display:inline-flex;gap:2px}
+.fw{width:12px;height:12px;border-radius:2px;background:rgba(0,196,106,.2);color:var(--g);font-size:8px;display:inline-flex;align-items:center;justify-content:center}
+.fd{width:12px;height:12px;border-radius:2px;background:rgba(122,150,170,.1);color:var(--txt2);font-size:8px;display:inline-flex;align-items:center;justify-content:center}
+.fl{width:12px;height:12px;border-radius:2px;background:rgba(232,64,64,.15);color:var(--red);font-size:8px;display:inline-flex;align-items:center;justify-content:center}
+
+.sbar-r{display:flex;align-items:center;gap:5px;margin-bottom:4px}
+.sbar-w{flex:1;height:3px;background:var(--surf2);border-radius:2px;overflow:hidden}
+.sbar{height:100%;border-radius:2px;transition:width .5s}
+.sbar.h{background:var(--g)}
+.sbar.a{background:var(--txt2)}
+.svl{font-size:10px;color:var(--txt2);width:26px;text-align:center}
+.slb{font-size:9px;color:var(--txt2);text-align:center;margin:-2px 0 8px}
+.empty{text-align:center;padding:36px;color:var(--txt2);font-size:13px}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="live-dot"></div>
+  <div>
+    <div class="brand-name">Geo<span>Foot</span> Live</div>
+    <div class="brand-sub">L'émotion du direct, signé Faye</div>
+  </div>
+  <nav class="hdr-nav">
+    <button class="nb on" onclick="setNav('scores',this)">Scores</button>
+    <button class="nb" onclick="setNav('fixtures',this)">Calendrier</button>
+    <button class="nb" onclick="setNav('results',this)">Résultats</button>
+    <button class="nb" onclick="setNav('standings',this)">Classement</button>
+  </nav>
+  <span class="live-count" id="liveCount">0 live</span>
+  <input class="search" placeholder="Rechercher..." id="si" oninput="doSearch()">
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sb-ttl">Toutes ligues</div>
+    <div class="sbi on" onclick="pickLg('all',this)"><div class="sbi-fl">🌍</div><div class="sbi-nm">Tous les matchs</div><div class="sbi-cn" id="c-all">0</div></div>
+    <div class="sdiv"></div>
+    <div class="sb-ttl">Europe</div>
+    <div class="sbi" onclick="pickLg('UCL',this)"><div class="sbi-fl">⭐</div><div class="sbi-nm">Champions League</div><div class="sbi-cn" id="c-UCL">0</div></div>
+    <div class="sbi" onclick="pickLg('PL',this)"><div class="sbi-fl">🏴󠁧󠁢󠁥󠁮󠁧󠁿</div><div class="sbi-nm">Premier League</div><div class="sbi-cn" id="c-PL">0</div></div>
+    <div class="sbi" onclick="pickLg('PD',this)"><div class="sbi-fl">🇪🇸</div><div class="sbi-nm">La Liga</div><div class="sbi-cn" id="c-PD">0</div></div>
+    <div class="sbi" onclick="pickLg('FL1',this)"><div class="sbi-fl">🇫🇷</div><div class="sbi-nm">Ligue 1</div><div class="sbi-cn" id="c-FL1">0</div></div>
+    <div class="sbi" onclick="pickLg('SA',this)"><div class="sbi-fl">🇮🇹</div><div class="sbi-nm">Serie A</div><div class="sbi-cn" id="c-SA">0</div></div>
+    <div class="sbi" onclick="pickLg('BL1',this)"><div class="sbi-fl">🇩🇪</div><div class="sbi-nm">Bundesliga</div><div class="sbi-cn" id="c-BL1">0</div></div>
+    <div class="sbi" onclick="pickLg('EL',this)"><div class="sbi-fl">🟠</div><div class="sbi-nm">Europa League</div><div class="sbi-cn" id="c-EL">0</div></div>
+    <div class="sdiv"></div>
+    <div class="sb-ttl">Afrique & Monde</div>
+    <div class="sbi" onclick="pickLg('CAN',this)"><div class="sbi-fl">🌍</div><div class="sbi-nm">CAN 2025</div><div class="sbi-cn" id="c-CAN">0</div></div>
+    <div class="sbi" onclick="pickLg('CAF',this)"><div class="sbi-fl">🏆</div><div class="sbi-nm">CAF Champions League</div><div class="sbi-cn" id="c-CAF">0</div></div>
+    <div class="sbi" onclick="pickLg('WC',this)"><div class="sbi-fl">🌐</div><div class="sbi-nm">Coupe du Monde</div><div class="sbi-cn" id="c-WC">0</div></div>
+    <div class="sdiv"></div>
+    <div class="sb-ttl">Moyen-Orient & Asie</div>
+    <div class="sbi" onclick="pickLg('SAU',this)"><div class="sbi-fl">🇸🇦</div><div class="sbi-nm">Saudi Pro League</div><div class="sbi-cn" id="c-SAU">0</div></div>
+    <div class="sbi" onclick="pickLg('QSL',this)"><div class="sbi-fl">🇶🇦</div><div class="sbi-nm">Qatar Stars League</div><div class="sbi-cn" id="c-QSL">0</div></div>
+    <div class="sdiv"></div>
+    <div class="sb-ttl">Amériques</div>
+    <div class="sbi" onclick="pickLg('MLS',this)"><div class="sbi-fl">🇺🇸</div><div class="sbi-nm">MLS</div><div class="sbi-cn" id="c-MLS">0</div></div>
+    <div class="sbi" onclick="pickLg('COPA',this)"><div class="sbi-fl">🌎</div><div class="sbi-nm">Copa Libertadores</div><div class="sbi-cn" id="c-COPA">0</div></div>
+    <div class="sbi" onclick="pickLg('BSA',this)"><div class="sbi-fl">🇧🇷</div><div class="sbi-nm">Brésil Série A</div><div class="sbi-cn" id="c-BSA">0</div></div>
+  </aside>
+
+  <main class="center">
+    <div class="player-zone">
+      <div class="player-ratio">
+        <div class="player-screen" id="ps">
+          <div class="player-idle">
+            <div class="play-btn" onclick="playSelected()"><div class="play-tri"></div></div>
+            <div class="idle-msg">Sélectionnez un match et cliquez ▶</div>
+            <div class="idle-nm" id="idleNm">— Aucun match sélectionné —</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="ch-bar">
+      <span class="ch-pill on">beIN SPORTS 1</span><span class="ch-pill">beIN SPORTS 2</span>
+      <span class="ch-pill">Canal+</span><span class="ch-pill">Canal+ Afrique</span>
+      <span class="ch-pill">RMC Sport</span><span class="ch-pill">Eurosport</span>
+      <span class="ch-pill">SSC Sports</span><span class="ch-pill">beIN SPORTS 3</span>
+      <span class="ch-pill">Apple TV</span><span class="ch-pill">Globo</span>
+    </div>
+    <div class="match-list">
+      <div class="fb-row">
+        <button class="fb on" onclick="setF('all',this)">Tous</button>
+        <button class="fb" onclick="setF('live',this)">● En direct</button>
+        <button class="fb" onclick="setF('upcoming',this)">○ À venir</button>
+        <button class="fb" onclick="setF('finished',this)">✓ Terminés</button>
+      </div>
+      <div id="mlist"></div>
+    </div>
+  </main>
+
+  <aside class="rpanel">
+    <div class="tabs">
+      <button class="tab on" onclick="setTab('sc',this)">Buteurs</button>
+      <button class="tab" onclick="setTab('st',this)">Classement</button>
+      <button class="tab" onclick="setTab('ms',this)">Stats</button>
+    </div>
+    <div id="rpc"></div>
+  </aside>
+</div>
+
+<script>
+const CHANNELS = ['beIN SPORTS 1','beIN SPORTS 2','Canal+','Canal+ Afrique','RMC Sport','Eurosport','SSC Sports','beIN SPORTS 3','Apple TV','Globo'];
+
+const MATCHES = [
+  // Champions League
+  {id:1,lg:'Champions League',lid:'UCL',fl:'⭐',rd:'Demi-finales',h:'Real Madrid',a:'Bayern Munich',sc:[2,1],st:'live',mn:67,ch:'beIN SPORTS 1'},
+  {id:2,lg:'Champions League',lid:'UCL',fl:'⭐',rd:'Demi-finales',h:'Arsenal',a:'PSG',sc:[0,0],st:'live',mn:34,ch:'beIN SPORTS 2'},
+  {id:3,lg:'Champions League',lid:'UCL',fl:'⭐',rd:'Quarts R.',h:'Inter Milan',a:'Atletico Madrid',sc:[1,1],st:'finished',ch:'RMC Sport'},
+  // Premier League
+  {id:4,lg:'Premier League',lid:'PL',fl:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',rd:'J37',h:'Manchester United',a:'Liverpool FC',sc:[0,0],st:'upcoming',tm:'14:30',ch:'Canal+'},
+  {id:5,lg:'Premier League',lid:'PL',fl:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',rd:'J37',h:'AFC Bournemouth',a:'Crystal Palace',sc:[0,0],st:'upcoming',tm:'13:00',ch:'Canal+'},
+  {id:6,lg:'Premier League',lid:'PL',fl:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',rd:'J37',h:'Aston Villa',a:'Tottenham',sc:[0,0],st:'upcoming',tm:'18:00',ch:'Canal+'},
+  {id:7,lg:'Premier League',lid:'PL',fl:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',rd:'J36',h:'Arsenal',a:'Fulham',sc:[3,0],st:'finished',ch:'Canal+'},
+  // La Liga
+  {id:8,lg:'La Liga',lid:'PD',fl:'🇪🇸',rd:'J36',h:'FC Barcelone',a:'Osasuna',sc:[2,1],st:'finished',ch:'beIN SPORTS 3'},
+  {id:9,lg:'La Liga',lid:'PD',fl:'🇪🇸',rd:'J36',h:'Espanyol',a:'Real Madrid',sc:[0,0],st:'upcoming',tm:'19:00',ch:'beIN SPORTS 1'},
+  {id:10,lg:'La Liga',lid:'PD',fl:'🇪🇸',rd:'J36',h:'Real Betis',a:'Real Oviedo',sc:[0,0],st:'upcoming',tm:'16:30',ch:'beIN SPORTS 3'},
+  {id:11,lg:'La Liga',lid:'PD',fl:'🇪🇸',rd:'J36',h:'Getafe CF',a:'Rayo Vallecano',sc:[0,0],st:'upcoming',tm:'14:15',ch:'beIN SPORTS 4'},
+  // Ligue 1
+  {id:12,lg:'Ligue 1',lid:'FL1',fl:'🇫🇷',rd:'J32',h:'Lille OSC',a:'Le Havre AC',sc:[1,0],st:'live',mn:55,ch:'Canal+'},
+  {id:13,lg:'Ligue 1',lid:'FL1',fl:'🇫🇷',rd:'J32',h:'Olympique Lyon',a:'Stade Rennais',sc:[0,0],st:'upcoming',tm:'18:45',ch:'Canal+'},
+  {id:14,lg:'Ligue 1',lid:'FL1',fl:'🇫🇷',rd:'J32',h:'PSG',a:'Lorient',sc:[2,0],st:'finished',ch:'Canal+'},
+  // Serie A
+  {id:15,lg:'Serie A',lid:'SA',fl:'🇮🇹',rd:'J36',h:'Juventus',a:'Hellas Verona',sc:[0,0],st:'upcoming',tm:'16:00',ch:'beIN SPORTS 5'},
+  {id:16,lg:'Serie A',lid:'SA',fl:'🇮🇹',rd:'J36',h:'Inter Milano',a:'Parma',sc:[0,0],st:'upcoming',tm:'18:45',ch:'beIN SPORTS 5'},
+  {id:17,lg:'Serie A',lid:'SA',fl:'🇮🇹',rd:'J36',h:'Sassuolo',a:'AC Milan',sc:[0,0],st:'upcoming',tm:'13:00',ch:'beIN SPORTS 5'},
+  // Bundesliga
+  {id:18,lg:'Bundesliga',lid:'BL1',fl:'🇩🇪',rd:'J33',h:'Borussia Dortmund',a:'B. Mönchengladbach',sc:[3,1],st:'live',mn:78,ch:'Eurosport'},
+  {id:19,lg:'Bundesliga',lid:'BL1',fl:'🇩🇪',rd:'J33',h:'SC Freiburg',a:'VFL Wolfsburg',sc:[0,0],st:'upcoming',tm:'17:30',ch:'Eurosport'},
+  // Europa League
+  {id:20,lg:'Europa League',lid:'EL',fl:'🟠',rd:'Demi-finales',h:'Bayer Leverkusen',a:'Lyon',sc:[2,2],st:'live',mn:82,ch:'RMC Sport'},
+  {id:21,lg:'Europa League',lid:'EL',fl:'🟠',rd:'Demi-finales',h:'Roma',a:'Tottenham',sc:[1,0],st:'live',mn:61,ch:'RMC Sport 2'},
+  // CAN 2025
+  {id:22,lg:'CAN 2025',lid:'CAN',fl:'🌍',rd:'Quarts de finale',h:'Sénégal',a:'Maroc',sc:[1,0],st:'live',mn:72,ch:'Canal+ Afrique'},
+  {id:23,lg:'CAN 2025',lid:'CAN',fl:'🌍',rd:'Quarts de finale',h:"Côte d'Ivoire",a:'Égypte',sc:[0,0],st:'live',mn:45,ch:'Canal+ Afrique'},
+  // CAF Champions League
+  {id:24,lg:'CAF Champions League',lid:'CAF',fl:'🏆',rd:'Demi-finales',h:'Al Ahly',a:'Espérance',sc:[1,1],st:'live',mn:60,ch:'beIN SPORTS 6'},
+  // Saudi Pro League
+  {id:25,lg:'Saudi Pro League',lid:'SAU',fl:'🇸🇦',rd:'J29',h:'Al-Hilal',a:'Al-Nassr',sc:[1,3],st:'finished',ch:'SSC Sports'},
+  {id:26,lg:'Saudi Pro League',lid:'SAU',fl:'🇸🇦',rd:'J29',h:'Al-Ittihad',a:'Al-Ahli',sc:[0,0],st:'upcoming',tm:'19:00',ch:'SSC Sports'},
+  // Qatar
+  {id:27,lg:'Qatar Stars League',lid:'QSL',fl:'🇶🇦',rd:'J22',h:'Al Sadd',a:'Al Duhail',sc:[0,0],st:'live',mn:38,ch:'Qatar TV'},
+  // MLS
+  {id:28,lg:'MLS',lid:'MLS',fl:'🇺🇸',rd:'Regular',h:'Inter Miami',a:'LA Galaxy',sc:[2,1],st:'finished',ch:'Apple TV'},
+  {id:29,lg:'MLS',lid:'MLS',fl:'🇺🇸',rd:'Regular',h:'NYCFC',a:'Seattle Sounders',sc:[0,0],st:'upcoming',tm:'02:30',ch:'Apple TV'},
+  // Copa Libertadores
+  {id:30,lg:'Copa Libertadores',lid:'COPA',fl:'🌎',rd:'Huitièmes',h:'Flamengo',a:'Boca Juniors',sc:[0,0],st:'upcoming',tm:'22:00',ch:'beIN SPORTS 7'},
+  // Brésil
+  {id:31,lg:'Brésil Série A',lid:'BSA',fl:'🇧🇷',rd:'J8',h:'Palmeiras',a:'São Paulo',sc:[1,0],st:'live',mn:55,ch:'Globo'},
+];
+
+const SCORERS = [
+  {n:'Kylian Mbappé',t:'Real Madrid',g:31,f:'🇫🇷'},
+  {n:'Erling Haaland',t:'Man City',g:28,f:'🇳🇴'},
+  {n:'Robert Lewandowski',t:'Barcelone',g:25,f:'🇵🇱'},
+  {n:'Harry Kane',t:'Bayern Munich',g:24,f:'🏴󠁧󠁢󠁥󠁮󠁧󠁿'},
+  {n:'Vinicius Jr',t:'Real Madrid',g:22,f:'🇧🇷'},
+  {n:'Sadio Mané',t:'Al-Nassr',g:20,f:'🇸🇳'},
+  {n:'Achraf Hakimi',t:'PSG',g:14,f:'🇲🇦'},
+  {n:'Riyad Mahrez',t:'Al-Ahli',g:13,f:'🇩🇿'},
+];
+
+const STANDINGS = [
+  {p:1,c:'Real Madrid',pts:82,w:26,d:4,l:3,gd:'+58',fr:'WWWDW',t:'cl'},
+  {p:2,c:'FC Barcelone',pts:78,w:24,d:6,l:3,gd:'+47',fr:'WLWWW',t:'cl'},
+  {p:3,c:'Atletico Madrid',pts:71,w:21,d:8,l:4,gd:'+31',fr:'DWWDW',t:'cl'},
+  {p:4,c:'Villarreal',pts:65,w:19,d:8,l:6,gd:'+18',fr:'WWLWD',t:'cl'},
+  {p:5,c:'Real Betis',pts:60,w:17,d:9,l:7,gd:'+12',fr:'DDWWL',t:'el'},
+  {p:6,c:'Sevilla',pts:55,w:15,d:10,l:8,gd:'+5',fr:'LWDWD',t:'el'},
+  {p:7,c:'Osasuna',pts:52,w:14,d:10,l:9,gd:'+3',fr:'WDWLD',t:'n'},
+  {p:8,c:'Athletic Bilbao',pts:50,w:13,d:11,l:9,gd:'+2',fr:'DWWDL',t:'n'},
+  {p:17,c:'Getafe CF',pts:30,w:7,d:9,l:17,gd:'-21',fr:'LDLWL',t:'rel'},
+  {p:18,c:'Cadiz',pts:24,w:5,d:9,l:19,gd:'-33',fr:'LLDLL',t:'rel'},
+];
+
+let curLg='all', curF='all', curTab='sc', selId=null, q='', nav='scores';
+
+function ini(n){return(n||'?').split(/[\s\-]/).map(w=>w[0]).join('').slice(0,2).toUpperCase()}
+
+function render(){
+  const matches = MATCHES.filter(m=>{
+    const lgOk = curLg==='all' || m.lid===curLg;
+    const fOk = curF==='all' || m.st===curF;
+    const qOk = !q || m.h.toLowerCase().includes(q) || m.a.toLowerCase().includes(q) || m.lg.toLowerCase().includes(q);
+    return lgOk && fOk && qOk;
+  });
+
+  // Update counts
+  const tot = MATCHES.filter(m=>curLg==='all'||m.lid===curLg).length;
+  document.getElementById('c-all').textContent = MATCHES.length;
+  ['UCL','PL','PD','FL1','SA','BL1','EL','CAN','CAF','WC','SAU','QSL','MLS','COPA','BSA'].forEach(lid=>{
+    const el = document.getElementById('c-'+lid);
+    if(el) el.textContent = MATCHES.filter(m=>m.lid===lid).length;
+  });
+  const liveCount = MATCHES.filter(m=>m.st==='live').length;
+  document.getElementById('liveCount').textContent = liveCount + ' live';
+
+  const grp={};
+  matches.forEach(m=>{
+    if(!grp[m.lg]) grp[m.lg]={fl:m.fl,rd:m.rd,ms:[]};
+    grp[m.lg].ms.push(m);
+  });
+
+  let h='';
+  if(!matches.length){h='<div class="empty">Aucun match trouvé</div>';}
+  Object.entries(grp).forEach(([name,g])=>{
+    h+=`<div class="lg-hdr"><span class="lg-fl">${g.fl}</span><span class="lg-nm">${name}</span><span class="lg-cnt">${g.ms.length} match${g.ms.length>1?'s':''}</span></div>`;
+    g.ms.forEach(m=>h+=card(m));
+  });
+  document.getElementById('mlist').innerHTML=h;
+}
+
+function card(m){
+  const live=m.st==='live', fin=m.st==='finished';
+  const sc = m.sc ? `${m.sc[0]} - ${m.sc[1]}` : 'vs';
+  const scDisp = m.st==='upcoming' ? (m.tm||'—') : sc;
+  const scCls = live?'live':fin?'fin':'sch';
+  const td = live ? `<span class="t-live">● ${m.mn}'</span>` : fin ? `<span class="t-fin">Terminé</span>` : `<span class="t-sch">${m.tm||'—'}</span>`;
+  const sel = selId===m.id?' sel':'';
+  return `<div class="mc${sel}" onclick="selMatch(${m.id})">
+<div class="mc-body">
+<div class="team"><div class="tlog">${ini(m.h)}</div><div class="tn">${m.h}</div></div>
+<div class="mc-mid"><div class="sc ${scCls}">${m.st==='upcoming'?m.tm||'—':sc}</div><div class="mc-time">${td}</div></div>
+<div class="team aw"><div class="tlog">${ini(m.a)}</div><div class="tn">${m.a}</div></div>
+</div>
+<div class="mc-ft">
+${live?'<div class="li-ind"><i></i>En direct</div>':''}
+<span class="tv">${m.ch}</span>
+<button class="watch-btn" onclick="event.stopPropagation();watchMatch(${m.id})">${live?'▶ Regarder':'📅 Programmer'}</button>
+</div></div>`;
+}
+
+function selMatch(id){
+  selId=id;
+  const m=MATCHES.find(x=>x.id===id);
+  if(m) document.getElementById('idleNm').textContent=`${m.h}  vs  ${m.a}`;
+  render();
+  if(curTab==='ms') renderPanel();
+}
+
+function watchMatch(id){
+  selId=id;
+  render();
+  playSelected();
+}
+
+function playSelected(){
+  const m=MATCHES.find(x=>x.id===selId);
+  const ps=document.getElementById('ps');
+  if(!m){ps.innerHTML='<div class="player-idle"><div class="idle-msg" style="color:var(--red)">Sélectionne un match d\'abord</div></div>';return;}
+  const live=m.st==='live';
+  const sc=m.sc?`${m.sc[0]} - ${m.sc[1]}`:'vs';
+  ps.innerHTML=`<div class="stream-wrap">
+<div class="stream-field">
+<div class="score-ov">
+<span class="ov-nm">${m.h}</span><span class="ov-sc">${sc}</span><span class="ov-nm">${m.a}</span>
+${live?`<span class="ov-mn">● ${m.mn}'</span><span class="live-ov">LIVE</span>`:''}
+</div>
+<svg viewBox="0 0 340 200" width="75%" style="max-width:320px" xmlns="http://www.w3.org/2000/svg">
+<rect x="3" y="3" width="334" height="194" rx="5" fill="none" stroke="#0f3a1f" stroke-width="1.5"/>
+<line x1="170" y1="3" x2="170" y2="197" stroke="#0f3a1f" stroke-width="1.5"/>
+<circle cx="170" cy="100" r="32" fill="none" stroke="#0f3a1f" stroke-width="1.5"/>
+<rect x="3" y="65" width="52" height="70" fill="none" stroke="#0f3a1f" stroke-width="1.5"/>
+<rect x="285" y="65" width="52" height="70" fill="none" stroke="#0f3a1f" stroke-width="1.5"/>
+<circle cx="170" cy="100" r="3" fill="#0f3a1f"/>
+<circle cx="44" cy="100" r="6" fill="#00c46a" opacity=".85"><animate attributeName="cx" values="44;58;40;52;44" dur="5s" repeatCount="indefinite"/><animate attributeName="cy" values="100;88;110;95;100" dur="5s" repeatCount="indefinite"/></circle>
+<circle cx="95" cy="75" r="6" fill="#00c46a" opacity=".85"><animate attributeName="cx" values="95;110;88;102;95" dur="4s" repeatCount="indefinite"/></circle>
+<circle cx="95" cy="125" r="6" fill="#00c46a" opacity=".85"><animate attributeName="cx" values="95;105;85;98;95" dur="4.5s" repeatCount="indefinite"/></circle>
+<circle cx="148" cy="100" r="6" fill="#00c46a" opacity=".85"><animate attributeName="cx" values="148;162;140;155;148" dur="3.5s" repeatCount="indefinite"/><animate attributeName="cy" values="100;88;112;95;100" dur="3.5s" repeatCount="indefinite"/></circle>
+<circle cx="296" cy="100" r="6" fill="#e84040" opacity=".85"><animate attributeName="cx" values="296;282;302;290;296" dur="4.8s" repeatCount="indefinite"/></circle>
+<circle cx="245" cy="75" r="6" fill="#e84040" opacity=".85"><animate attributeName="cx" values="245;232;252;240;245" dur="4.2s" repeatCount="indefinite"/></circle>
+<circle cx="245" cy="125" r="6" fill="#e84040" opacity=".85"><animate attributeName="cx" values="245;258;238;252;245" dur="3.8s" repeatCount="indefinite"/></circle>
+<circle cx="192" cy="100" r="6" fill="#e84040" opacity=".85"><animate attributeName="cx" values="192;178;200;185;192" dur="4s" repeatCount="indefinite"/><animate attributeName="cy" values="100;112;90;106;100" dur="4s" repeatCount="indefinite"/></circle>
+<circle cx="168" cy="98" r="5" fill="#fff" opacity=".9"><animate attributeName="cx" values="168;188;155;175;145;168" dur="3.2s" repeatCount="indefinite"/><animate attributeName="cy" values="98;85;108;92;112;98" dur="3.2s" repeatCount="indefinite"/></circle>
+</svg>
+</div>
+<div class="stream-ctrl">
+<button class="ctrl-btn"><svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><rect x="3" y="2" width="4" height="12" rx="1"/><rect x="9" y="2" width="4" height="12" rx="1"/></svg></button>
+<button class="ctrl-btn"><svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><rect x="3" y="3" width="10" height="10" rx="1"/></svg></button>
+<div class="vol-bar"><div class="vol-fill"></div></div>
+<div style="width:1px;height:16px;background:var(--bord)"></div>
+<div class="stream-info">Sur <span class="stream-ch">${m.ch}</span> — ${m.lg}</div>
+${live?'<span style="background:var(--red);color:#fff;font-size:8px;font-weight:700;padding:2px 7px;border-radius:3px;animation:blink 1s infinite">EN DIRECT</span>':'<span style="font-size:9px;color:var(--txt2)">Rediffusion</span>'}
+<select class="q-sel"><option>HD 1080p</option><option>720p</option><option>480p</option></select>
+<button class="close-btn" onclick="closePlayer()">✕</button>
+</div></div>`;
+  document.querySelectorAll('.ch-pill').forEach(b=>b.classList.toggle('on',b.textContent===m.ch));
+}
+
+function closePlayer(){
+  const m=MATCHES.find(x=>x.id===selId);
+  document.getElementById('ps').innerHTML=`<div class="player-idle"><div class="play-btn" onclick="playSelected()"><div class="play-tri"></div></div><div class="idle-msg">Cliquez pour reprendre</div><div class="idle-nm">${m?m.h+' vs '+m.a:'—'}</div></div>`;
+}
+
+function renderPanel(){
+  const el=document.getElementById('rpc');
+  if(curTab==='sc'){
+    el.innerHTML=SCORERS.map((s,i)=>`<div class="sc-row"><div class="sr-rk${i<3?' gold':''}">${i+1}</div><div style="flex:1"><div class="sr-nm">${s.f} ${s.n}</div><div class="sr-tm">${s.t}</div></div><div class="sr-g">${s.g}</div></div>`).join('');
+  } else if(curTab==='st'){
+    let h=`<table class="st-tbl"><thead><tr><th>#</th><th>Club</th><th>Pts</th><th>V</th><th>N</th><th>D</th><th>DB</th><th>Forme</th></tr></thead><tbody>`;
+    STANDINGS.forEach(s=>{
+      const cl=s.t==='cl'?'pcl':s.t==='el'?'pel':s.t==='rel'?'prl':'pn';
+      const fr=[...s.fr].map(x=>x==='W'?`<span class="fw">V</span>`:x==='D'?`<span class="fd">N</span>`:`<span class="fl">D</span>`).join('');
+      h+=`<tr><td><span class="pb ${cl}">${s.p}</span></td><td>${s.c}</td><td>${s.pts}</td><td>${s.w}</td><td>${s.d}</td><td>${s.l}</td><td style="color:${s.gd.startsWith('+')?'var(--g)':'var(--red)'}">${s.gd}</td><td><span class="fm">${fr}</span></td></tr>`;
+    });
+    el.innerHTML=h+'</tbody></table>';
+  } else {
+    const m=MATCHES.find(x=>x.id===selId);
+    if(!m){el.innerHTML='<div class="empty">Cliquez sur un match pour ses stats</div>';return;}
+    el.innerHTML=`<div style="font-size:11px;font-weight:600;color:var(--txt);margin-bottom:12px">${m.h} vs ${m.a}</div>`+
+    [['67%','33%','Possession'],['8','4','Tirs cadrés'],['5','4','Corners'],['55%','45%','Passes réussies'],['1','3','Cartons jaunes'],['3','2','Hors-jeux']].map(([hv,av,lb])=>`<div class="sbar-r"><div class="svl">${hv}</div><div class="sbar-w"><div class="sbar h" style="width:${parseInt(hv)}%"></div></div><div class="sbar-w"><div class="sbar a" style="width:${parseInt(av)}%"></div></div><div class="svl">${av}</div></div><div class="slb">${lb}</div>`).join('');
+  }
+}
+
+function pickLg(id,el){curLg=id;document.querySelectorAll('.sbi').forEach(e=>e.classList.remove('on'));el.classList.add('on');render();}
+function setF(f,btn){curF=f;document.querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');render();}
+function setTab(t,btn){curTab=t;document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderPanel();}
+function setNav(v,btn){nav=v;document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');}
+function doSearch(){q=document.getElementById('si').value.toLowerCase();render();}
+
+// Simulation live : les scores et minutes évoluent en temps réel
+setInterval(()=>{
+  MATCHES.filter(m=>m.st==='live').forEach(m=>{
+    if(m.mn<90) m.mn++;
+    // Simulation d'un but aléatoire (1% de chance par tick)
+    if(Math.random()<0.01){
+      if(Math.random()<0.5) m.sc[0]++;
+      else m.sc[1]++;
+    }
+  });
+  render();
+  // Mettre à jour l'overlay du lecteur si actif
+  if(selId){
+    const m=MATCHES.find(x=>x.id===selId);
+    if(m&&m.st==='live'){
+      const ovMn=document.querySelector('.ov-mn');
+      const ovSc=document.querySelector('.ov-sc');
+      if(ovMn) ovMn.textContent=`● ${m.mn}'`;
+      if(ovSc) ovSc.textContent=`${m.sc[0]} - ${m.sc[1]}`;
+    }
+  }
+}, 15000);
+
+render();
+renderPanel();
+</script>
+</body>
+</html>
