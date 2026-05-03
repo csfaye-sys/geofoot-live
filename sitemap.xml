@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+  <url>
+    <loc>https://csfaye-sys.github.io/geofoot-live/</loc>
+    <lastmod>2026-05-03</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <news:news>
+      <news:publication>
+        <news:name>SaFoot</news:name>
+        <news:language>fr</news:language>
+      </news:publication>
+      <news:publication_date>2026-05-03</news:publication_date>
+      <news:title>SaFoot - Football en Direct | Premier League, Ligue des Champions, CAN</news:title>
+      <news:keywords>foot, football, streaming, Premier League, Ligue des Champions, CAN, Coupe du Monde, La Liga, Ligue 1</news:keywords>
+    </news:news>
+  </url>
+</urlset>
